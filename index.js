@@ -7,6 +7,8 @@ const bodyParser = require('body-parser');
 const app = express();
 const T = new Twit(config);
 
+let myTweets;
+
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(bodyParser.json());
 
@@ -14,18 +16,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set("view engine", "pug");
 
 app.get("/", function(req, res) {
-  res.render("app", { title: "Hey", message: 'long way to go ......'});
-});
 
-function getTwittes() {
-  T.get("search/tweets", { q: "China since:2017-07-11", count: 10 }, function(
+  T.get("statuses/user_timeline", { screen_name: "cooboor", count: 5 }, function(
     err,
     data,
     response
   ) {
-    return data;
+      res.render("app", { tweets: data });
   });
-}
+});
+
+
+
 
 app.use((err, req, res, next) => {
   res.locals.error = err;
