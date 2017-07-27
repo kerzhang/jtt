@@ -1450,9 +1450,10 @@ li:only-child .circle--clone--remove {
 
 /* line 2, ../sass/circle/components/_headers.sass */
 .circle--header {
-  background: #1da1f2;
+  /* background: #1da1f2; */
   padding: 20px 0;
   margin-bottom: 30px;
+  /* height: 65px; */
 }
 /* line 2, ../sass/circle/core/_mixins.sass */
 .circle--header:before, .circle--header:after {
@@ -2148,6 +2149,7 @@ body {
   z-index: 1;
   margin: 0;
   padding: 20px 5px;
+  /* height: 65px; */
 }
 
 /* line 39, ../sass/global.sass */
