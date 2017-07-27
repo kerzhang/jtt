@@ -27,7 +27,7 @@ header.circle--header(style={background: 'url(' + backgroundImg + ')'})
               a Sign Out
 
 .app--tweet
-  form(action="/", method="post", onsubmit='postTweet()')
+  form(action="/", method="post")
     .circle--fluid
       .circle--fluid--cell.circle--fluid--primary.align-bottom.app--tweet--post
         .app--avatar(style='background-image: url(' + userProfileImgUrl + ')')
