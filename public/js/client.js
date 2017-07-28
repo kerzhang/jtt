@@ -1,3 +1,14 @@
+const socket = io.connect('http://localhost:3000');
+
+if (socket !== undefined) {
+  console.log('socket connected ...');
+}
+
+$('.button-primary').click(() => {
+  socket.emit('input');
+})
+
+
 function timetowords(timestamp) {
 	  var tweet_date = new Date(Date.parse(timestamp));
     var user_date = new Date();
