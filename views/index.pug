@@ -27,12 +27,12 @@ header.circle--header(style={background: 'url(' + backgroundImg + ')'})
               a Sign Out
 
 .app--tweet
-  form(action="/", method="post")
+  form(action="/", method="POST")
     .circle--fluid
       .circle--fluid--cell.circle--fluid--primary.align-bottom.app--tweet--post
         .app--avatar(style='background-image: url(' + userProfileImgUrl + ')')
           img(src= userProfileImgUrl)
-        textarea#tweet-textarea.circle--textarea--input(placeholder="What's happening?")
+        textarea#tweet-textarea.circle--textarea--input(placeholder="What's happening?", name='tweetText')
         strong#tweet-char.app--tweet--char 140
       .circle--fluid--cell.align-bottom
         button.button-primary Tweet
@@ -61,7 +61,7 @@ header.circle--header(style={background: 'url(' + backgroundImg + ')'})
                 .app--avatar(style='background-image: url(' + tweet.user.profile_image_url_https + ')')
                   img(src=tweet.user.profile_image_url_https)
                 h4= tweet.user.name
-                | @#{tweet.user.screen_name}
+                |  @#{tweet.user.screen_name}
               p= tweet.text
               ul.app--tweet--actions.circle--list--inline
                 li
@@ -101,7 +101,7 @@ header.circle--header(style={background: 'url(' + backgroundImg + ')'})
                   a.app--tweet--author
                     .app--avatar(style='background-image: url(' + friend.profile_image_url_https + ')')
                       img(src=friend.profile_image_url_https)
-                    h4 friend.name
+                    h4= friend.name
                     p @#{friend.screen_name}
                 .circle--fluid--cell
                   a.button.button-text Unfollow
@@ -118,4 +118,7 @@ header.circle--header(style={background: 'url(' + backgroundImg + ')'})
                       img(src=userProfileImgUrl)
                   p.app--message--text
                     |#{chat.text}
-                  p.app--message--timestamp= chat.created_at
+                  p#messageTime.app--message--timestamp= chat.created_at
+
+script(src="js/jquery-3.2.1.min.js")
+script(src="js/client.js")

@@ -59,12 +59,29 @@ T.get("account/verify_credentials", { skip_status: true })
     );
   });
 
-  function postTweet() {
-    // T.post("statuses/update", { status: txt }, function(err, data, response) {
-    //   console.log(data);
-    // });
-    let tweet = document.getElementById('tweet-textarea').innerText;
-    console.log(tweet);
+  function postTweet(txt) {
+    T.post("statuses/update", { status: txt }, function(err, data, response) {
+      if (err) throw err;
+      console.log(data);
+    });
+  }
+
+  function twitterTimeConvert(createdAt) {
+    var tweetDate = Date.parse(createdAt.replace(/( \+)/, ' UTC$1'));
+    var now = Date.now();
+    var getFormatted = function dhm(ms) {
+      days = Math.floor(ms / (24 * 60 * 60 * 1000));
+      daysms = ms % (24 * 60 * 60 * 1000);
+      hours = Math.floor((daysms) / (60 * 60 * 1000));
+      hoursms = ms % (60 * 60 * 1000);
+      minutes = Math.floor((hoursms) / (60 * 1000));
+      minutesms = ms % (60 * 1000);
+      sec = Math.floor((minutesms) / (1000));
+      return days + ":" + hours + ":" + minutes + ":" + sec;
+    }
+
+    //format example days:hours:minutes:sec 
+    return getFormatted(now - tweetDate);
   }
 
 app.get("/", function(req, res) {
@@ -86,14 +103,21 @@ app.get("/", function(req, res) {
 });
 
 app.post('/', function(req, res) {
-  postTweet();
+  let tweet = req.body.tweetText;
+  postTweet(tweet);
+  return res.redirect('/');
 });
 
-// app.use((err, req, res, next) => {
-//   res.locals.error = err;
-//   res.status(err.status);
-//   res.render("error");
-// });
+app.use((req, res, next) => {
+  const err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+app.use((err, req, res, next) => {
+  res.locals.error = err;
+  res.render("error");
+});
 
 app.listen(3000, () => {
   console.log("Server is running on port: 3000 ");
