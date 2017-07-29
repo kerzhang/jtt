@@ -2245,7 +2245,7 @@ a:hover .app--avatar {
   left: 0;
   z-index: 1;
   background: #e8f5fe;
-  padding: 20px 15px;
+  padding: 10px 15px;
   border-top: 1px solid #d4edfd;
 }
 /* line 102, ../sass/global.sass */
@@ -2256,7 +2256,7 @@ a:hover .app--avatar {
 }
 /* line 106, ../sass/global.sass */
 .app--tweet textarea {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
 }
 /* line 108, ../sass/global.sass */
 .app--tweet .circle--fluid--cell {

@@ -4,7 +4,7 @@
   "description": "just to twitter",
   "main": "index.js",
   "scripts": {
-    "test": "n"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",

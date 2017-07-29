@@ -4,7 +4,12 @@ const config = require("./config");
 const express = require("express");
 const bodyParser = require("body-parser");
 
+//Setup socket.io server with express to get client message in real-time,
+//because the proj required to add new tweet to list without refresh page.
 const app = express();
+const server = require("http").createServer(app);
+const io = require("socket.io")(server);
+
 const T = new Twit(config);
 
 let userName = "";
@@ -13,6 +18,7 @@ let backgroundImgUrl = "";
 let myTweets;
 let myFriends;
 let myChats;
+let friendsCount = 5;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -20,7 +26,47 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 app.set("view engine", "pug");
 
-//Verify and local user information
+//Load 5 tweets, 5 friends, 5 messages from twitter.com
+//Assign the returned data to global varibles of this code
+function loadTweetData() {
+  T.get("friends/list", { screen_name: userName, count: 5 }, function(
+    err,
+    data,
+    response
+  ) {
+    if (err) {
+        // console.log(err);
+        throw err;
+    } else {
+      myFriends = data.users;
+      // console.log(data.users);
+    }
+  });
+
+  T.get("direct_messages/sent", { count: 5 }, function(err, data, response) {
+    if (err) {
+        console.log(err);
+    } else {
+      myChats = data;
+      // console.log(data);
+    }
+  });
+
+  T.get("statuses/user_timeline", { screen_name: userName, count: 5 }, function(
+    err,
+    data,
+    response
+  ) {
+    if (err) {
+      console.log(err);
+    } else {
+      myTweets = data;
+      // console.log(data);
+    }
+  });
+}
+
+//Verify user information, and load user data if passed.
 T.get("account/verify_credentials", { skip_status: true })
   .catch(function(err) {
     console.log("caught error", err.stack);
@@ -29,87 +75,42 @@ T.get("account/verify_credentials", { skip_status: true })
     userName = result.data.screen_name;
     userProfileImgUrl = result.data.profile_image_url_https;
     backgroundImgUrl = result.data.profile_banner_url;
+    friendsCount = result.data.friends_count;
     // console.log(result.data);
-
-    T.get("friends/list", { screen_name: userName, count: 5 }, function(
-      err,
-      data,
-      response
-    ) {
-      myFriends = data.users;
-      // console.log(data.users);
-    });
-
-    T.get("direct_messages/sent", { count: 5 }, function(
-      err,
-      data,
-      response
-    ) {
-      myChats = data;
-      // console.log(data);
-    });
-
-    T.get(
-      "statuses/user_timeline",
-      { screen_name: userName, count: 5 },
-      function(err, data, response) {
-        myTweets = data;
-        // console.log(data);
-      }
-    );
+    loadTweetData();
   });
 
-  function postTweet(txt) {
-    T.post("statuses/update", { status: txt }, function(err, data, response) {
-      if (err) throw err;
-      console.log(data);
+//Receive the new tweet text from client and post it to Twitter
+io.on("connection", function(socket) {
+  console.log("Client connected ...");
+  socket.on("input", msg => {
+    T.post("statuses/update", { status: msg }, function(err, data, response) {
+      if (err) {
+        console.log(err);
+      }
     });
-  }
+    //Twitter response very slow sometimes, so wait for a while to load the updated data.
+    setTimeout(function() {
+      loadTweetData();
+    }, 3000);
+  });
+});
 
-  function twitterTimeConvert(createdAt) {
-    var tweetDate = Date.parse(createdAt.replace(/( \+)/, ' UTC$1'));
-    var now = Date.now();
-    var getFormatted = function dhm(ms) {
-      days = Math.floor(ms / (24 * 60 * 60 * 1000));
-      daysms = ms % (24 * 60 * 60 * 1000);
-      hours = Math.floor((daysms) / (60 * 60 * 1000));
-      hoursms = ms % (60 * 60 * 1000);
-      minutes = Math.floor((hoursms) / (60 * 1000));
-      minutesms = ms % (60 * 1000);
-      sec = Math.floor((minutesms) / (1000));
-      return days + ":" + hours + ":" + minutes + ":" + sec;
-    }
-
-    //format example days:hours:minutes:sec 
-    return getFormatted(now - tweetDate);
-  }
-
+//Home page
 app.get("/", function(req, res) {
-  // T.get("statuses/user_timeline", { screen_name: userName, count: 5 }, function(
-  //   err,
-  //   data,
-  //   response
-  // ) {
-  //   myTweets = data;
   res.render("index", {
     tweets: myTweets,
     friends: myFriends,
     chats: myChats,
     userProfileImgUrl: userProfileImgUrl,
     username: userName,
-    backgroundImg: backgroundImgUrl
+    backgroundImg: backgroundImgUrl,
+    friendsCount: friendsCount
   });
-  // });
-});
-
-app.post('/', function(req, res) {
-  let tweet = req.body.tweetText;
-  postTweet(tweet);
-  return res.redirect('/');
 });
 
 app.use((req, res, next) => {
-  const err = new Error('Not Found');
+  const err = new Error("Not Found");
   err.status = 404;
   next(err);
 });
@@ -119,6 +120,6 @@ app.use((err, req, res, next) => {
   res.render("error");
 });
 
-app.listen(3000, () => {
+server.listen(3000, () => {
   console.log("Server is running on port: 3000 ");
 });
